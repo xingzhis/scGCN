@@ -60,7 +60,7 @@ metrics <- function(lab1,inter_graph,clusters){
 #' @examples: load count.list and label.list from folder "example_data"
 #' save_processed_data(count.list,label.list)
 
-GenerateGraph <- function(Dat1,Dat2,Lab1,K,check.unknown){
+GenerateGraph <- function(Dat1,Dat2,Lab1,K,check.unknown,folder){
     object1 <- CreateSeuratObject(counts=Dat1,project = "1",assay = "Data1",
                                   min.cells = 0,min.features = 0,
                                   names.field = 1,names.delim = "_")
@@ -91,7 +91,7 @@ GenerateGraph <- function(Dat1,Dat2,Lab1,K,check.unknown){
         obj <- FindClusters(obj, resolution = 0.5,verbose=F)
         hc <- Idents(obj); inter.graph=grp1+1
         scores <- metrics(lab1=Lab1,inter_graph=inter.graph,clusters=hc)
-        saveRDS(scores,file='./input/statistical_scores.RDS')
+        saveRDS(scores,file=paste0(folder,'/input/statistical_scores.RDS'))
     }
     #'  Intra-data graph  
     d2.list <- list(objects1[[2]],objects1[[2]])
@@ -217,12 +217,13 @@ pre_process <- function(count_list,label_list){
 #' @export: all files are saved in current path
 #' @examples: load count.list and label.list from folder "example_data"
 #' save_processed_data(count.list,label.list)
-save_processed_data <- function(count.list,label.list,Rgraph=TRUE,check_unknown=FALSE){
+save_processed_data <- function(count.list,label.list,Rgraph=TRUE,check_unknown=FALSE,folder='.'){
     count.list <- pre_process(count_list=count.list,label_list=label.list)
     #' save counts data to certain path: 'input'
-    dir.create('input'); 
-    write.csv(t(count.list[[1]]),file='input/Data1.csv',quote=F,row.names=T)
-    write.csv(t(count.list[[2]]),file='input/Data2.csv',quote=F,row.names=T)
+    input_folder = paste0(folder,'/input')
+    dir.create(input_folder); 
+    write.csv(t(count.list[[1]]),file=paste0(input_folder,'/Data1.csv'),quote=F,row.names=T)
+    write.csv(t(count.list[[2]]),file=paste0(input_folder,'/Data2.csv'),quote=F,row.names=T)
 
     #' optional graph: R genreated graph has minor differnce with python, user can choose the one with better performance
     if (Rgraph){
@@ -231,11 +232,12 @@ save_processed_data <- function(count.list,label.list,Rgraph=TRUE,check_unknown=
         new.lab1 <- label.list[[1]]; new.lab2 <- label.list[[2]]
         graphs <- suppressWarnings(GenerateGraph(Dat1=new.dat1,Dat2=new.dat2,
                                                  Lab1=new.lab1,K=5,
-                                                 check.unknown=check_unknown))
-        write.csv(graphs[[1]],file='input/inter_graph.csv',quote=F,row.names=T)
-        write.csv(graphs[[2]],file='input/intra_graph.csv',quote=F,row.names=T)
-        write.csv(new.lab1,file='input/label1.csv',quote=F,row.names=F)
-        write.csv(new.lab2,file='input/label2.csv',quote=F,row.names=F)        
+                                                 check.unknown=check_unknown,
+                                                 folder=folder))
+        write.csv(graphs[[1]],file=paste0(input_folder,'/inter_graph.csv'),quote=F,row.names=T)
+        write.csv(graphs[[2]],file=paste0(input_folder,'/intra_graph.csv'),quote=F,row.names=T)
+        write.csv(new.lab1,file=paste0(input_folder,'/Label1.csv'),quote=F,row.names=F)
+        write.csv(new.lab2,file=paste0(input_folder,'/Label2.csv'),quote=F,row.names=F)        
     } else {
         #' use python generated graph
         dir.create('results')

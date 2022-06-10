@@ -19,11 +19,15 @@ np.random.seed(seed)
 tf.compat.v1.set_random_seed(seed)
 tf.set_random_seed(seed)
 
+# Get parent folder
+import sys
+folder = str(sys.argv[1])
+
 # Settings
 flags = tf.app.flags
 FLAGS = flags.FLAGS
-flags.DEFINE_string('dataset', 'input', 'data dir')
-flags.DEFINE_string('output', 'results', 'predicted results')
+flags.DEFINE_string('dataset', '%s/input' % folder, 'data dir')
+flags.DEFINE_string('output', '%s/results' % folder, 'predicted results')
 flags.DEFINE_bool('graph', True, 'select the optional graph.')
 flags.DEFINE_string('model', 'scGCN','Model string.') 
 flags.DEFINE_float('learning_rate', 0.01, 'Initial learning rate.')
@@ -164,6 +168,7 @@ np.savetxt(FLAGS.output+'/scGCN_query_mask.csv',pred_mask,delimiter=',',comments
 ab = sess.run(tf.nn.softmax(predict_output))
 all_binary_prediction = sess.run(tf.argmax(ab, 1))  #' predict catogrized labels
 all_binary_labels = sess.run(tf.argmax(labels_binary_all, 1))  #' true catogrized labels
+np.savetxt(FLAGS.output+'/scGCN_all_predicted_prob.csv',ab,delimiter=',',comments='',fmt='%f') # yuge
 np.savetxt(FLAGS.output+'/scGCN_all_binary_predicted_labels.csv',all_binary_prediction,delimiter=',',comments='',fmt='%f')
 np.savetxt(FLAGS.output+'/scGCN_index_guide.csv',index_guide,delimiter=',',comments='',fmt='%f')
 np.savetxt(FLAGS.output+'/scGCN_all_binary_input_labels.csv',all_binary_labels,delimiter=',',comments='',fmt='%f')
