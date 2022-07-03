@@ -8,7 +8,6 @@ from data import *
 from collections import defaultdict
 from scipy.stats import uniform
 import tensorflow as tf
-
 #' -------- convert graph to specific format -----------
 
 def get_value(diction, specific):

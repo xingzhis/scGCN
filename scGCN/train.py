@@ -1,5 +1,7 @@
 import os
 import sys
+from os import path
+from pathlib import Path
 import time
 import numpy as np
 import pickle as pkl
@@ -21,15 +23,17 @@ tf.set_random_seed(seed)
 
 # Get parent folder
 import sys
-folder = str(sys.argv[1])
-
+assert(len(sys.argv) == 2, "parameter needed: output path")
+output_folder = str(sys.argv[1])
+scGCN_folder = path.dirname(path.abspath(__file__))
+Path(output_folder).mkdir(parents=True, exist_ok=True)
 # Settings
 flags = tf.app.flags
 FLAGS = flags.FLAGS
-flags.DEFINE_string('dataset', '%s/input' % folder, 'data dir')
-flags.DEFINE_string('output', '%s/results' % folder, 'predicted results')
+flags.DEFINE_string('dataset', '%s/input' % scGCN_folder, 'data dir')
+flags.DEFINE_string('output', '%s' % output_folder, 'predicted results')
 flags.DEFINE_bool('graph', True, 'select the optional graph.')
-flags.DEFINE_string('model', 'scGCN','Model string.') 
+flags.DEFINE_string('model', 'scGCN','Model string.')
 flags.DEFINE_float('learning_rate', 0.01, 'Initial learning rate.')
 flags.DEFINE_integer('epochs', 200, 'Number of epochs to train.')
 flags.DEFINE_integer('hidden1', 32, 'Number of units in hidden layer 1.')
@@ -95,7 +99,7 @@ test_loss = []
 
 #configurate checkpoint directory to save intermediate model training weights
 saver = tf.train.Saver()
-save_dir = 'checkpoints/'
+save_dir = os.path.join(scGCN_folder, 'checkpoints/')
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 
@@ -134,7 +138,7 @@ for epoch in range(FLAGS.epochs):
 
 print("Finished Training....")
 
-#'  outputs 
+#'  outputs
 all_mask = np.array([True] * len(train_mask))
 labels_binary_all = new_label
 
@@ -151,7 +155,7 @@ all_prediction = sess.run(
     tf.equal(sess.run(tf.argmax(ab, 1)),
              sess.run(tf.argmax(labels_binary_all, 1))))
 
-#' accuracy on prediction masks 
+#' accuracy on prediction masks
 acc_train = np.sum(all_prediction[train_mask]) / np.sum(train_mask)
 acc_test = np.sum(all_prediction[test_mask]) / np.sum(test_mask)
 acc_val = np.sum(all_prediction[val_mask]) / np.sum(val_mask)
@@ -161,10 +165,10 @@ print('Checking train/test/val set accuracy: {}, {}, {}'.format(
 print('Checking pred set accuracy: {}'.format(acc_pred))
 
 #' save the predicted labels of query data
-os.mkdir(FLAGS.output)
+#os.mkdir(FLAGS.output)
 scGCN_all_labels = true_label.values.flatten()  #' ground truth
 np.savetxt(FLAGS.output + '/scGCN_all_input_labels.csv',scGCN_all_labels,delimiter=',',comments='',fmt='%s')
-np.savetxt(FLAGS.output+'/scGCN_query_mask.csv',pred_mask,delimiter=',',comments='',fmt='%s')           
+np.savetxt(FLAGS.output+'/scGCN_query_mask.csv',pred_mask,delimiter=',',comments='',fmt='%s')
 ab = sess.run(tf.nn.softmax(predict_output))
 all_binary_prediction = sess.run(tf.argmax(ab, 1))  #' predict catogrized labels
 all_binary_labels = sess.run(tf.argmax(labels_binary_all, 1))  #' true catogrized labels
