@@ -10,10 +10,11 @@ import scipy.sparse
 from graph import *
 
 #' data preperation
-def input_data(DataDir,Rgraph=True):
+def input_data(DataDir,Rgraph=True,test_on_train=True):
+    # TODO this `test_on_train` is just a temperary setting, should make explicit interface for train and test dataset input!
     if Rgraph==False:
         graph_construct(outputdir='process_data')
-     
+
     DataPath1 = '{}/Data1.csv'.format(DataDir)
     DataPath2 = '{}/Data2.csv'.format(DataDir)
     LabelsPath1 = '{}/Label1.csv'.format(DataDir)
@@ -58,10 +59,17 @@ def input_data(DataDir,Rgraph=True):
     label_val = []
 
     for i in range(0, len(p_data)):
-        temD_train, temd_test, temL_train, teml_test = train_test_split(
-            p_data[i], p_label[i], test_size=0.1, random_state=1)
-        temd_train, temd_val, teml_train, teml_val = train_test_split(
-            temD_train, temL_train, test_size=0.1, random_state=1)
+        if test_on_train:
+            temD_train, temL_train = p_data[i], p_label[i]
+            temd_train, temd_val, teml_train, teml_val = train_test_split(
+                temD_train, temL_train, test_size=0.1, random_state=1)
+            temd_test, teml_test = p_data[i], p_label[i]
+        else:
+            temD_train, temd_test, temL_train, teml_test = train_test_split(
+                p_data[i], p_label[i], test_size=0.1, random_state=1)
+            temd_train, temd_val, teml_train, teml_val = train_test_split(
+                temD_train, temL_train, test_size=0.1, random_state=1)
+        print(temd_train.shape, teml_train.shape, temd_val.shape, teml_val.shape, temd_test.shape, teml_test.shape)
         print((temd_train.index == teml_train.index).all())
         print((temd_test.index == teml_test.index).all())
         print((temd_val.index == teml_val.index).all())
@@ -78,6 +86,18 @@ def input_data(DataDir,Rgraph=True):
     label_train1 = pd.concat(label_train)
     label_test1 = pd.concat(label_test)
     label_val1 = pd.concat(label_val)
+
+
+    # TODO this `test_on_train` is just a temperary setting, should make explicit interface for train and test dataset input!
+    if test_on_train:
+        # sort index to match the raw data for comparison
+        data_test1.sort_index(inplace=True)
+        label_test1.sort_index(inplace=True)
+        # change index to prevent repeat with the train data, or would cause an extra match in utils.py:171.
+        ttl_num_dat = data_test1.shape[0]
+        new_id = data_test1.index + ttl_num_dat
+        data_test1.index = new_id
+        label_test1.index = new_id
 
     train2 = pd.concat([data_train1, lab_data2])
     lab_train2 = pd.concat([label_train1, lab_label2])

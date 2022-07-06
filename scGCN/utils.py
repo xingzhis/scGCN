@@ -41,8 +41,9 @@ def removNestings(l):
             output.append(i)
     return (output)
 
-def load_data(datadir,rgraph=True):
-    input_data(datadir,Rgraph=rgraph)
+def load_data(datadir,rgraph=True,test_on_train=True):
+    # TODO this `test_on_train` is just a temperary setting, should make explicit interface for train and test dataset input!
+    input_data(datadir,Rgraph=rgraph,test_on_train=test_on_train)
     PIK = "{}/datasets.dat".format(datadir)
     with open(PIK, "rb") as f:
         objects = pkl.load(f)
@@ -177,7 +178,7 @@ def load_data(datadir,rgraph=True):
                         np.where(find1 == id_graph1.iloc[i, 1])[0]))
         for i in range(len(id_graph1))
     ])
-
+    #import pdb;pdb.set_trace()
     matrix = np.identity(len(labels))
     matrix[tuple(id_grp1.T)] = 1
     matrix[tuple(id_grp2.T)] = 1

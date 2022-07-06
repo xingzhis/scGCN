@@ -9,7 +9,7 @@ import tensorflow as tf
 from utils import *
 from tensorflow.python.saved_model import tag_constants
 from models import scGCN
-sys.stdout = open("output_log.txt", "w")
+#sys.stdout = open("output_log.txt", "w")
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -46,9 +46,9 @@ flags.DEFINE_integer('early_stopping', 10,
 flags.DEFINE_integer('max_degree', 3, 'Maximum Chebyshev polynomial degree.')
 
 # Load data
+# TODO this `test_on_train` is just a temperary setting, should make explicit interface for train and test dataset input!
 adj, features, labels_binary_train, labels_binary_val, labels_binary_test, train_mask, pred_mask, val_mask, test_mask, new_label, true_label, index_guide = load_data(
-    FLAGS.dataset,rgraph=FLAGS.graph)
-
+    FLAGS.dataset,rgraph=FLAGS.graph,test_on_train=True)
 support = [preprocess_adj(adj)]
 num_supports = 1
 model_func = scGCN
